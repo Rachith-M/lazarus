@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assisted Website</title>
+    <body bgcolor="DarkGrey"> 
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        #assistant-response { margin-top: 20px; }
+        button { padding: 10px 20px; font-size: 16px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Welcome to AI Assisted Website</h1>
+    <p id="description">This website provides AI assistance for visually, hearing, and physically disabled individuals. This is a simple website and not meant for real world applications as it may result in extreme fatality
+    </p>
+
+    <!-- Buttons for Accessibility -->
+    <button onclick="speakText()">Speak Text</button>
+    <button onclick="startSpeechRecognition()">Use Voice Command</button>
+
+    <!-- Area for displaying AI response -->
+    <div id="assistant-response"></div>
+
+    <script>
+        // Text-to-Speech Functionality (For Visual Impairment)
+        function speakText() {
+            const text = document.getElementById('description').innerText;
+            const speech = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(speech);
+        }
+
+        // Speech-to-Text Functionality (For Physical Disability & Hearing Impairment)
+        function startSpeechRecognition() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+            recognition.start();
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('assistant-response').innerText = "You said: " + transcript;
+                sendToBackendForAssistance(transcript);
+            };
+        }
+
+        // Send user input to the back-end for AI assistance
+        function sendToBackendForAssistance(input) {
+            fetch('/api/assist', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ input: input })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('assistant-response').innerText = data.message;
+                speakText();  // Speak the AI response aloud
+            });
+        }
+    </script>
+</body>
+</html>
